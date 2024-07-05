@@ -176,7 +176,7 @@ const HomePage = () => {
         };
         await setCookie();
         localStorage.setItem("dailylimit", maxlimit);
-        console.log(dailylimit.data.result.daily);
+        console.log("daily limit", dailylimit.data.result.daily);
         console.log(valuesArray);
       } catch (error) {
         console.log(error);
