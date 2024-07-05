@@ -9,39 +9,81 @@ const JWT_SECRET = "Manoj";
 
 router.post("/send", authMiddleware, async (req, res) => {
   try {
-    const Transaction = await Transaction.create({
+    const { amount, category, to } = req.body;
+
+    // Find the user and check balance
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if user has sufficient balance
+    if (user.balance < amount) {
+      return res.status(400).json({ message: "Insufficient balance" });
+    }
+
+    // Create a new transaction
+    const newTransaction = await Transaction.create({
       userId: req.userId,
       date: new Date(),
-      amount: req.body.amount,
-      category: req.body.category,
-      to: req.body.to,
+      amount,
+      category,
+      to,
     });
 
-    const token = jwt.sign({ userId }, JWT_SECRET);
+    // Deduct amount from user's balance
+    user.balance -= amount;
 
-    res.json({
-      message: "Teacher account created Successfully!",
-      token: token,
+    // Save the updated user balance
+    await user.save();
+
+    res.status(200).json({
+      message: "Transaction successful",
+      balance: user.balance,
+      transaction: newTransaction,
+    });
+  } catch (error) {
+    console.error("Error performing transaction:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.put("/deposit", authMiddleware, async (req, res) => {
+  try {
+    const { depositAmount } = req.body;
+
+    // Ensure depositAmount is provided
+    if (!depositAmount) {
+      return res.status(400).json({ message: "Deposit amount is required" });
+    }
+
+    // Find the user and update their balance
+    const user = await User.findOne({ _id: req.userId });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.balance += depositAmount;
+
+    // Save the updated user document
+    await user.save();
+
+    res.status(200).json({
+      message: "Deposit successful",
+      balance: user.balance,
     });
   } catch (error) {
     console.error("Error Transaction", error);
     res.status(500).json({
-      message: "Error occured",
+      message: "Error occurred",
     });
   }
 });
 
 //signin post req
 router.post("/signin", async (req, res) => {
-  const { success } = signinBody.safeParse(req.body);
-
-  if (!success) {
-    return res.status(411).json({
-      message: "Invalid Inputs!!",
-    });
-  }
-
-  const user = await Teacher.findOne({
+  const user = await User.findOne({
     mailId: req.body.mailId,
     password: req.body.password,
   });

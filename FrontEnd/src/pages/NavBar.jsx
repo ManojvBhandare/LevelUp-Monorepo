@@ -35,6 +35,10 @@ export const NavBar = () => {
       navigate("/read");
     } else if (id === 2) {
       navigate("/analytics");
+    } else if (id === 5) {
+      navigate("/profile");
+    } else if (id === 4) {
+      navigate("/funds");
     }
   };
 

@@ -1,15 +1,15 @@
 import { Gauge } from "@mui/x-charts/Gauge";
 
-export default function BasicGauges() {
+export default function BasicGauges({ spent, valueMax }) {
   return (
     <Gauge
       width={200}
       height={200}
-      value={60}
+      value={spent}
       startAngle={0}
       endAngle={360}
       valueMin={0}
-      valueMax={1000}
+      valueMax={valueMax}
       cornerRadius="50%"
     />
   );

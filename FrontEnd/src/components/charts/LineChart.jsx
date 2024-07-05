@@ -1,12 +1,20 @@
 import { LineChart } from "@mui/x-charts/LineChart";
 
-export default function BasicLineChart() {
+export default function BasicLineChart({ spendingData }) {
+  // Assuming spendingData is an array of objects with 'date' and 'amount' properties
+  const dates = spendingData.map((item) => item.date);
+  const amounts = spendingData.map((item) => item.amount);
+
+  // Reverse the arrays if you want to show data from oldest to newest
+  // dates.reverse();
+  // amounts.reverse();
+
   return (
     <LineChart
-      xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
+      xAxis={[{ data: dates }]}
       series={[
         {
-          data: [2, 5.5, 2, 8.5, 1.5, 5],
+          data: amounts,
         },
       ]}
       width={500}

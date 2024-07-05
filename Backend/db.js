@@ -24,13 +24,12 @@ const UserSchema = new mongoose.Schema({
     required: true,
     trim: true,
     lowercase: true,
-    minLength: 3,
+
     maxLength: 30,
   },
   password: {
     type: String,
     required: true,
-    minLength: 3,
   },
   income: {
     type: Number,

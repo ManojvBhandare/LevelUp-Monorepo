@@ -97,8 +97,9 @@ router.get("/calculateDailylimit", authMiddleware, async (req, res) => {
     //   );
     //   return lastDayOfMonth.getDate() - today.getDate();
     // }; // Replace with actual value
-    const daysRemaining = 3;
-    const result = await evaluate(
+    const daysRemaining = 15;
+    console.log(list);
+    const result = evaluate(
       list,
       salary,
       expectedSaving,
@@ -106,49 +107,61 @@ router.get("/calculateDailylimit", authMiddleware, async (req, res) => {
       daysRemaining
     );
 
-    const updatedFields = {};
-    for (let category in result.list) {
-      if (list[category].allowed !== result.list[category].allowed) {
-        updatedFields[`${category}.allowed`] = result.list[category].allowed;
-      }
-    }
+    // const updatedFields = {};
+    // for (let category in result.list) {
+    //   if (list[category].allowed !== result.list[category].allowed) {
+    //     updatedFields[`${category}.allowed`] = result.list[category].allowed;
+    //   }
+    // }
 
     const upi = await Priority.updateOne(
       { userId: req.userId },
-      { $set: updatedFields }
+      {
+        $set: {
+          Friends: result.list.Friends,
+          Food: result.list.Food,
+          Entertainment: result.list.Entertainment,
+          Grocery: result.list.Grocery,
+          Others: result.list.Others,
+        },
+      }
     );
+    // console.log(result.list);
 
-    res.status(200).json({ result, upi });
+    res.status(200).json({ result: result, upi });
+    // res.status(200).json({ message: "ok" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-async function evaluate(list, salary, goal, moneyRemaining, daysRemaining) {
-  let expTotal = 0;
-  let maxAllowed = salary - goal;
-  let worstCase = 0;
-  let probability = 1;
+function evaluate(list, sal, goal, money_remaining, days_remaining) {
+  let exp_total = 0;
+  let max_allowed = sal - goal;
+  let worst_case = 0;
 
-  for (let category in list) {
-    expTotal += list[category].exp;
-    worstCase += (list[category].priority / 100) * list[category].exp;
+  for (let i in list) {
+    exp_total += list[i].exp;
+    worst_case += (list[i].priority / 100) * list[i].exp;
   }
 
+  console.log(max_allowed);
   let possible = true;
+
   if (
-    worstCase > maxAllowed ||
-    moneyRemaining < (worstCase / 30) * daysRemaining + goal
+    worst_case > max_allowed ||
+    money_remaining < (worst_case / 30) * days_remaining + goal
   ) {
     console.log("Not possible");
     possible = false;
     probability = 0;
   } else {
     console.log("Possible");
-    let perDayIdeal = maxAllowed / 30;
-    let perDayCurrent = (moneyRemaining - goal) / daysRemaining;
-    probability = perDayIdeal / perDayCurrent;
+    possible = true;
+    let per_day_ideal = max_allowed / 30;
+    let per_day_current = (money_remaining - goal) / days_remaining;
+    probability = per_day_ideal / per_day_current;
     if (probability > 1) {
       probability = 1 / probability;
     }
@@ -156,78 +169,96 @@ async function evaluate(list, salary, goal, moneyRemaining, daysRemaining) {
   }
 
   if (possible) {
-    if (moneyRemaining - expTotal >= goal) {
-      // Goal can be achieved with current spending
+    if (money_remaining - exp_total >= goal) {
     } else {
-      let sorted = [];
-      for (let category in list) {
-        sorted.push([
-          category,
-          list[category].exp,
-          list[category].priority,
-          list[category].allowed,
-        ]);
+      sorted = [];
+      for (let i in list) {
+        sorted.push([i, list[i].exp, list[i].priority, list[i].allowed]);
       }
+      console.log(sorted);
+      sorted.sort((a, b) => {
+        return a[2] - b[2];
+      });
+      console.log(sorted);
 
-      sorted.sort((a, b) => a[2] - b[2]);
-      let extraToBeSaved = goal - (moneyRemaining - expTotal);
+      let extra_to_be_saved = goal - (money_remaining - exp_total);
+
+      console.log(extra_to_be_saved);
 
       for (let i in sorted) {
-        if (extraToBeSaved === 0) {
+        list[sorted[i][0]].allowed = list[sorted[i][0]].exp;
+        if (extra_to_be_saved == 0) {
           break;
         } else if (
           ((100 - list[sorted[i][0]].priority) / 100) * list[sorted[i][0]].exp <
-          extraToBeSaved
+          extra_to_be_saved
         ) {
+          // console.log(sorted[i]);
+          // console..log(((100-list[sorted[i][0]].priority)/100)*list[sorted[i][0]].exp)
           list[sorted[i][0]].allowed -=
             ((100 - list[sorted[i][0]].priority) / 100) *
             list[sorted[i][0]].exp;
-          extraToBeSaved -=
+          extra_to_be_saved -=
             ((100 - list[sorted[i][0]].priority) / 100) *
             list[sorted[i][0]].exp;
-        } else {
-          list[sorted[i][0]].allowed -= extraToBeSaved;
-          extraToBeSaved = 0;
+        } else if (
+          ((100 - list[sorted[i][0]].priority) / 100) *
+            list[sorted[i][0]].exp >=
+          extra_to_be_saved
+        ) {
+          list[sorted[i][0]].allowed -= extra_to_be_saved;
+          extra_to_be_saved = 0;
         }
       }
     }
-
-    let daily = {};
-    for (let category in list) {
-      daily[category] = list[category].allowed / daysRemaining;
+    daily = {};
+    for (let i in list) {
+      daily[i] = list[i].allowed / days_remaining;
     }
     console.log(daily);
-    console.log(list);
-    resolve({ daily, probability, list });
+    return { daily, probability, list };
   }
-
-  return { message: "Not possible", probability };
+  // console.log(list);
+  return { daily: "Not possible", probability: 0, list: list };
 }
 
 router.get("/wellness", authMiddleware, async (req, res) => {
   try {
-    const { Friends, Food, Entertainment, Grocery, Others } =
-      await Priority.findOne({ userId: req.userId });
-    recommended_list = { Friends, Food, Entertainment, Grocery, Others };
-    let total_priority = 0;
+    const priorityData = await Priority.findOne({ userId: req.userId });
 
-    for (let i in recommended_list) {
-      total_priority += recommended_list[i].priority;
+    if (!priorityData) {
+      return res.status(404).json({ message: "Priority data not found" });
     }
 
-    let wellness_numerator = 0;
-    for (let i in recommended_list) {
-      wellness_numerator += total_priority += recommended_list[i].priority;
+    const { Friends, Food, Entertainment, Grocery, Others } = priorityData;
+    const recommendedList = { Friends, Food, Entertainment, Grocery, Others };
 
-      recommended_list[i].priority *
-        (recommended_list[i].allowed / recommended_list[i].exp);
+    let totalPriority = 0;
+    let wellnessNumerator = 0;
+
+    // Calculate total priority and wellness numerator
+    for (let category in recommendedList) {
+      if (recommendedList[category].exp !== 0) {
+        totalPriority += recommendedList[category].priority;
+        wellnessNumerator +=
+          (recommendedList[category].priority *
+            recommendedList[category].allowed) /
+          recommendedList[category].exp;
+      }
     }
 
-    let wellness_score = wellness_numerator / total_priority;
-    res.json(wellness_score);
-    console.log(wellness_score);
+    // Calculate wellness score
+    let wellnessScore = 0;
+    if (totalPriority > 0) {
+      wellnessScore = (wellnessNumerator / totalPriority) * 100;
+    }
+
+    // Round wellness score to two decimal places
+    wellnessScore = Math.round(wellnessScore * 100) / 100;
+
+    res.json({ wellnessScore });
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching wellness data:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });

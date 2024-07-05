@@ -1,10 +1,9 @@
 import { BarChart } from "@mui/x-charts/BarChart";
-import { dataset } from "./weather";
 
 const chartSetting = {
   xAxis: [
     {
-      label: "rainfall (mm)",
+      label: "Spent on Categories",
     },
   ],
   width: 700,
@@ -13,12 +12,12 @@ const chartSetting = {
 
 const valueFormatter = (value) => `${value}mm`;
 
-export default function HorizontalGrid() {
+export default function HorizontalGrid({ dataset, dataKey, datakeyY }) {
   return (
     <BarChart
       dataset={dataset}
-      yAxis={[{ scaleType: "band", dataKey: "month" }]}
-      series={[{ dataKey: "seoul" }]}
+      yAxis={[{ scaleType: "band", dataKey: "category" }]}
+      series={[{ dataKey: "amount" }]}
       layout="horizontal"
       grid={{ vertical: true }}
       {...chartSetting}

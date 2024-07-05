@@ -1,10 +1,13 @@
+import { formatTransactionsForBarChart } from "@/components/utiles"; // Adjust the path accordingly
 import { BarChart } from "@mui/x-charts";
 
-export const SecondBar = ({ height, width }) => {
+export const SecondBar = ({ transactions, height, width }) => {
+  const { data, labels } = formatTransactionsForBarChart(transactions);
+
   return (
     <BarChart
-      series={[{ data: [1, 2, 3, 2, 1] }]}
-      xAxis={[{ scaleType: "band", data: ["A", "B", "C", "D", "E"] }]}
+      series={[{ data }]}
+      xAxis={[{ scaleType: "band", data: labels }]}
       height={height}
       width={width}
       leftAxis={null}

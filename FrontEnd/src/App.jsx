@@ -5,7 +5,10 @@ import { Analytics } from "./pages/Analytics";
 import HomePage from "./pages/HomePage";
 import { LandingPage } from "./pages/LandingPage";
 import Outlet from "./pages/Outlet";
-import { UserLogin } from "./pages/UserLogin";
+import Profile from "./pages/Profile";
+import UserLogedin from "./pages/UserLogedin";
+import UserLogin from "./pages/UserLogin";
+import MutualFunds from "./pages/mutualfunds";
 
 function App() {
   return (
@@ -13,6 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<UserLogin />} />
+        <Route path="/logedin" element={<UserLogedin />} />
 
         {/* Routes that should include the NavBar */}
         <Route element={<Outlet />}>
@@ -20,6 +24,8 @@ function App() {
           <Route path="/read" element={<ReadSection />} />
           <Route path="/article/:id" element={<Article />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/funds" element={<MutualFunds />} />
         </Route>
       </Routes>
     </Router>

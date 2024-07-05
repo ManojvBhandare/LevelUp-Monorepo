@@ -4,7 +4,7 @@ const app = express();
 const cors = require("cors");
 app.use(
   cors({
-    origin: "http://localhost:5173", // Replace with your frontend origin
+    origin: ["http://localhost:5173", "http://localhost:5174"], // Replace with your frontend origins
     credentials: true,
   })
 );

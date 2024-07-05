@@ -4,7 +4,8 @@ import Article from "../components/article";
 import HomePage from "../pages/HomePage";
 import { Analytics } from "./Analytics";
 import { NavBar } from "./NavBar";
-
+import Profile from "./Profile";
+import MutualFunds from "./mutualfunds";
 const Outlet = () => {
   return (
     <div className="flex">
@@ -15,6 +16,8 @@ const Outlet = () => {
           <Route path="/read" element={<ReadSection />} />
           <Route path="/article/:id" element={<Article />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/funds" element={<MutualFunds />} />
         </Routes>
       </div>
     </div>
