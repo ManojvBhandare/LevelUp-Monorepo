@@ -78,12 +78,12 @@ export const Analytics = () => {
       <div className="flex flex-row items-center gap-[50px]">
         <div className="mt-4 py-6 px-8 relative flex flex-col justify-center items-center h-[55vh] w-[55vw] border-2 border-border rounded-lg">
           <div className="absolute top-2 right-2">
-            <Select onValueChange={handleCategoryChange}>
+            <Select onValueChange={handleCategoryChange} defaultValue="">
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Friends">Friends/Family</SelectItem>
+                <SelectItem value="Friend">Friends/Family</SelectItem>
                 <SelectItem value="Food">Food</SelectItem>
                 <SelectItem value="Groceries">Groceries</SelectItem>
                 <SelectItem value="Entertainment">Entertainment</SelectItem>
@@ -106,14 +106,17 @@ export const Analytics = () => {
         <div className="bg-[#D6DDFC] rounded-lg max-w-[35vw] py-4 px-4">
           <h1 className="text-xl font-semibold">Recent Transactions</h1>
           <div className="grid grid-cols-1 gap-3 overflow-y-auto p-2 max-h-[40vh] w-[30vw]">
-            {transactions.map((transaction, index) => (
-              <RecentsTransactions
-                key={index}
-                to={transaction.to}
-                type={transaction.type}
-                amount={transaction.amount}
-              />
-            ))}
+            {transactions
+              .slice()
+              .reverse()
+              .map((transaction, index) => (
+                <RecentsTransactions
+                  key={index}
+                  to={transaction.to}
+                  type={transaction.type}
+                  amount={transaction.amount}
+                />
+              ))}
           </div>
         </div>
         <div className="flex flex-col justify-center items-center h-[35vh] w-[15vw] border-2 border-border rounded-lg p-4">

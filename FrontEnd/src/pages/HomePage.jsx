@@ -1,13 +1,17 @@
 import { AddGoalUI } from "@/components/AddGoalUi";
 import BasicBars from "@/components/charts/BarChart";
-
 import BasicGauges from "@/components/charts/Glory";
 import HorizontalGrid from "@/components/charts/HorizontalChart";
 import axios from "axios";
+import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
-
+function calculateAverage(valuesArray) {
+  if (valuesArray.length === 0) return 0;
+  const sum = valuesArray.reduce((acc, curr) => acc + parseFloat(curr), 0);
+  return parseInt(sum / valuesArray.length);
+}
 const HomePage = () => {
   const navigate = useNavigate();
   const [totalSpent, setTotalSpent] = useState(0);
@@ -126,7 +130,8 @@ const HomePage = () => {
     };
     fetchGoals();
   }, []);
-  const [dailylimit, setDailylimit] = useState(0);
+
+  const [max, setMax] = useState(0);
   useEffect(() => {
     const fetchdaily = async () => {
       try {
@@ -140,8 +145,8 @@ const HomePage = () => {
         );
 
         // Assuming dailylimit.data is your object containing the amounts
-        let max = 0; // Initialize max with a default value
-
+        let maxlimit = 0; // Initialize max with a default value
+        console.log(dailylimit.data.result.daily);
         // Iterate over the keys in dailylimit.data
         const valuesArray = [];
 
@@ -150,8 +155,27 @@ const HomePage = () => {
             valuesArray.push(dailylimit.data.result.daily[category]);
           }
         }
-        max = parseInt(Math.max(...valuesArray));
-        setDailylimit(max);
+        // function calculateAverage(valuesArray) {
+        //   if (valuesArray.length === 0) return 0;
+        //   const sum = valuesArray.reduce(
+        //     (acc, curr) => acc + parseFloat(curr),
+        //     0
+        //   );
+        //   return parseInt(sum / valuesArray.length);
+        // }
+        maxlimit = calculateAverage(valuesArray);
+
+        setMax(maxlimit);
+        const setCookie = async () => {
+          Cookies.set("daily", max, {
+            domain: ".localhost",
+            expires: 7,
+            sameSite: "None",
+            secure: true,
+          });
+        };
+        await setCookie();
+        localStorage.setItem("dailylimit", maxlimit);
         console.log(dailylimit.data.result.daily);
         console.log(valuesArray);
       } catch (error) {
@@ -169,7 +193,7 @@ const HomePage = () => {
         </div>
         <div className=" flex flex-col items-start justify-center p-2 border-2 border-border h-[10vh] w-[12vw] rounded-lg">
           <h2 className="text-xl font-semibold">Daily Limit</h2>
-          <p className="text-lg">Rs. {dailylimit}</p>
+          <p className="text-lg">Rs. {max}</p>
         </div>
       </div>
       <div className="ml-[5rem] py-8 px-8 flex flex-row justify-between gap-2">

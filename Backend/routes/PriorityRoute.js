@@ -219,7 +219,7 @@ function evaluate(list, sal, goal, money_remaining, days_remaining) {
     return { daily, probability, list };
   }
   // console.log(list);
-  return { daily: "Not possible", probability: 0, list: list };
+  return { daily: 0, probability: 0, list: list };
 }
 
 router.get("/wellness", authMiddleware, async (req, res) => {

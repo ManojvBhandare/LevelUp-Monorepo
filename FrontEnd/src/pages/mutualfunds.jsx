@@ -1,5 +1,7 @@
 import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
+
+// Example mutual funds data (replace with your actual data source)
 import data from "./csvtojson.json";
 
 const MutualFunds = () => {
@@ -34,49 +36,43 @@ const MutualFunds = () => {
     });
   }, []);
 
-  const handleFilterChange = (filterName, values) => {
-    setSelectedFilters({
-      ...selectedFilters,
-      [filterName]: values,
-    });
-  };
-
   useEffect(() => {
     filterFunds();
   }, [selectedFilters]);
 
   const filterFunds = () => {
     let filtered = data;
+    let filtered1 = [];
 
     if (selectedFilters.scheme_type.length > 0) {
-      filtered = filtered.filter((fund) =>
+      filtered1 = filtered.filter((fund) =>
         selectedFilters.scheme_type.includes(fund["Scheme Type"])
       );
     }
     if (selectedFilters.scheme_category.length > 0) {
-      filtered = filtered.filter((fund) =>
+      filtered1 = filtered.filter((fund) =>
         selectedFilters.scheme_category.includes(fund["Scheme Category"])
       );
     }
     if (selectedFilters.risk_level.length > 0) {
-      filtered = filtered.filter((fund) =>
+      filtered1 = filtered.filter((fund) =>
         selectedFilters.risk_level.includes(fund["Risk Level"])
       );
     }
     if (selectedFilters.age_group.length > 0) {
-      filtered = filtered.filter((fund) =>
+      filtered1 = filtered.filter((fund) =>
         selectedFilters.age_group.includes(fund["Age Group"])
       );
     }
     if (selectedFilters.investment_duration.length > 0) {
-      filtered = filtered.filter((fund) =>
+      filtered1 = filtered.filter((fund) =>
         selectedFilters.investment_duration.includes(
           fund["Investment Duration"]
         )
       );
     }
 
-    setFilteredFunds(filtered);
+    setFilteredFunds(filtered1);
   };
 
   const clearAllFilters = () => {
@@ -103,7 +99,12 @@ const MutualFunds = () => {
             name={capitalizeFirstLetter(key.replace(/_/g, " "))}
             options={filters[key]}
             selected={selectedFilters[key]}
-            onChange={(values) => handleFilterChange(key, values)}
+            onChange={(values) =>
+              setSelectedFilters({
+                ...selectedFilters,
+                [key]: values,
+              })
+            }
           />
         ))}
       </div>
@@ -132,7 +133,7 @@ const MutualFunds = () => {
       </div>
       <hr style={{ margin: "20px auto", width: "calc(100% - 30px)" }} />
       <div className="results">
-        <h2 className="text-xl font-semibold mb-4">Filtered Mutual Funds</h2>
+        <h2 className="text-xl font-semibold mb-4">Recommended Mutual Funds</h2>
         <FundList funds={filteredFunds} />
       </div>
     </div>
@@ -212,8 +213,8 @@ FilterDropdown.propTypes = {
 const FundList = ({ funds }) => (
   <div className="text-sm grid grid-cols-3 gap-4">
     {funds.map((fund, index) => {
-      const fundName = fund.AMC;
-      const fundDetails = `${fund["Scheme Category"]} - ${fund["Risk Level"]}`;
+      const fundName = fund.AMC; // Replace with your data field
+      const fundDetails = `${fund["Scheme Category"]} - ${fund["Risk Level"]}`; // Example details
       return (
         <div key={index} className="bg-gray-100 p-4 rounded-lg shadow-md">
           <span className="font-bold">{fundName}</span> - {fundDetails}
@@ -226,4 +227,5 @@ const FundList = ({ funds }) => (
 FundList.propTypes = {
   funds: PropTypes.array.isRequired,
 };
+
 export default MutualFunds;
